@@ -20,7 +20,8 @@ oauth.register(
     server_metadata_url=CONF_URL,
     client_kwargs={
         'scope': 'openid email profile'
-    }
+    },
+    timeout=30
 )
 
 @app.get('/')
@@ -39,7 +40,7 @@ async def homepage(request: Request):
 @app.get('/login')
 async def login(request: Request):
     redirect_uri = request.url_for('auth')
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+    return await oauth.google.authorize_redirect(request, redirect_uri, access_type='offline', prompt='consent')
 
 
 @app.get('/auth')
