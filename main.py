@@ -24,6 +24,16 @@ oauth.register(
     timeout=30
 )
 
+import httpx
+
+async def get_userinfo(access_token: str):
+    async with httpx.AsyncClient() as client:
+        headers = {'Authorization': f'Bearer {access_token}'}
+        resp = await client.get('https://openidconnect.googleapis.com/v1/userinfo', headers=headers)
+        resp.raise_for_status()
+        return resp.json()
+
+
 @app.get('/')
 async def homepage(request: Request):
     user = request.session.get('user')
@@ -47,7 +57,8 @@ async def login(request: Request):
 async def auth(request: Request):
     try:
         token = await oauth.google.authorize_access_token(request)
-        print("User Token", token)
+        user_info = await get_userinfo(token['access_token'])
+        print("User INFO", user_info)
     except OAuthError as error:
         return HTMLResponse(f'<h1>{error.error}</h1>')
     user = token.get('userinfo')
